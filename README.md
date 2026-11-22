@@ -34,3 +34,7 @@ npm run generate:sitemap
 The generator writes `dist/sitemap.xml` and `dist/robots.txt`. It includes the home page, catalog, and active product pages; authenticated and administrative routes are excluded. Publish the generated `dist` directory. The sitemap generator requires the backend API to be reachable during generation.
 
 The storefront is a client-rendered React application. `react-helmet-async` updates metadata in the browser; dynamic product metadata may not be visible to every crawler without prerendering or server-side rendering.
+
+## Render backend service
+
+Create the API as a Render **Web Service** with the repository root directory set to `backend`, build command `npm ci && npm run build`, and start command `npm start`. The backend build command syntax-checks its JavaScript; it does not produce a separate bundle. Configure the backend environment variables in Render's service settings.
