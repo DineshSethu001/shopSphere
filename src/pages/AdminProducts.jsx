@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import { Pencil, Trash2, Plus, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   fetchProducts,
   createProduct,
@@ -19,6 +19,7 @@ const initialForm = {
 }
 
 const AdminProducts = () => {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(initialForm)
   const [editingId, setEditingId] = useState(null)
@@ -31,8 +32,8 @@ const AdminProducts = () => {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const data = await fetchProducts()
-      setProducts(data)
+      const data = await fetchProducts({ limit: 50 })
+      setProducts(data.products)
       setError('')
     } catch (err) {
       setError(
@@ -64,19 +65,7 @@ const AdminProducts = () => {
   }
 
   const handleEdit = (product) => {
-    setEditingId(product.id)
-
-    setForm({
-      name: product.name,
-      price: String(product.price),
-      category: product.category,
-      description: product.description || '',
-      image: product.image || '',
-      stock: String(product.stock),
-    })
-
-    setShowForm(true)
-    setMessage('')
+    navigate(`/admin/products/edit/${product.id}`)
   }
 
   const handleSubmit = async (e) => {

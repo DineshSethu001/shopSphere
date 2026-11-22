@@ -41,8 +41,25 @@ const OrderSuccess = () => {
           </div>
 
           <div className="flex justify-between py-2">
-            <span className="text-gray-500">Total Amount</span>
+            <span className="text-gray-500">Subtotal</span>
+            <span>₹{Number(order.subtotal || 0).toLocaleString('en-IN')}</span>
+          </div>
 
+          {order.couponCode && (
+            <>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-500">Coupon</span>
+                <span className="font-semibold">{order.couponCode}</span>
+              </div>
+              <div className="flex justify-between py-2 text-green-700">
+                <span>Discount</span>
+                <span>- ₹{Number(order.discountAmount || 0).toLocaleString('en-IN')}</span>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-between border-t py-2">
+            <span className="text-gray-500">Total Amount</span>
             <span className="font-bold">
               ₹{order.totalAmount?.toLocaleString('en-IN')}
             </span>
@@ -52,8 +69,13 @@ const OrderSuccess = () => {
             <span className="text-gray-500">Payment</span>
 
             <span className="font-semibold">
-              Cash on Delivery
+              {order.paymentMethod === 'ONLINE' ? 'Razorpay' : 'Cash on Delivery'}
             </span>
+          </div>
+
+          <div className="flex justify-between py-2">
+            <span className="text-gray-500">Payment Status</span>
+            <span className="font-semibold">{order.paymentStatus}</span>
           </div>
 
           <div className="flex justify-between py-2">
@@ -77,6 +99,12 @@ const OrderSuccess = () => {
   className="mt-3 block rounded-lg border border-black px-6 py-3 font-semibold text-black hover:bg-gray-100"
 >
   Track Your Order
+</Link>
+<Link
+  to="/my-orders"
+  className="mt-3 block rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-100"
+>
+  View My Orders
 </Link>
       </div>
 

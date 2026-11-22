@@ -8,13 +8,14 @@ const fileFilter = (req, file, callback) => {
     'image/jpeg',
     'image/png',
     'image/webp',
-    'image/gif',
   ]
 
   if (allowedTypes.includes(file.mimetype)) {
     callback(null, true)
   } else {
-    callback(new Error('Only JPEG, PNG, WEBP and GIF images are allowed.'))
+    const error = new Error('Only JPEG, PNG and WEBP images are allowed.')
+    error.status = 400
+    callback(error)
   }
 }
 

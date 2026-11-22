@@ -5,9 +5,17 @@ const normalizeProduct = (product) => ({
   id: product._id || product.id,
 })
 
-export const fetchProducts = async () => {
-  const { data } = await api.get('/products')
-  return data.products.map(normalizeProduct)
+export const fetchProducts = async (params = {}) => {
+  const { data } = await api.get('/products', { params })
+  return {
+    products: data.products.map(normalizeProduct),
+    pagination: data.pagination,
+  }
+}
+
+export const fetchProductCategories = async () => {
+  const { data } = await api.get('/products/categories')
+  return data.categories
 }
 
 export const fetchProductById = async (id) => {
@@ -18,10 +26,6 @@ export const fetchProductById = async (id) => {
 export const createProduct = async (productData) => {
   const { data } = await api.post('/products', productData)
   return normalizeProduct(data.product)
-}
-export const createProduct = async (productData) => {
-  const { data } = await api.post('/products', productData)
-  return data
 }
 export const updateProduct = async (id, productData) => {
   const { data } = await api.put(`/products/${id}`, productData)

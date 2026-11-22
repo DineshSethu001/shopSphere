@@ -2,17 +2,41 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
+import { Tag, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { clearCart } from '../redux/cartSlice'
 import { createOrder } from '../services/orderService'
+import { validateCoupon } from '../services/couponService'
+import { createRazorpayOrder, verifyRazorpayPayment } from '../services/paymentService'
+
+const loadRazorpayScript = () => new Promise((resolve) => {
+  if (window.Razorpay) {
+    resolve(true)
+    return
+  }
+
+  const script = document.createElement('script')
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+  script.onload = () => resolve(true)
+  script.onerror = () => resolve(false)
+  document.body.appendChild(script)
+})
+
+const currency = (value) => new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 2,
+}).format(value || 0)
 
 const Checkout = () => {
   const cartItems = useSelector((state) => state.cart.items)
+  const user = useSelector((state) => state.auth.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const [form, setForm] = useState({
-    customerName: '',
-    email: '',
+    customerName: user?.name || '',
+    email: user?.email || '',
     phone: '',
     street: '',
     city: '',
@@ -22,12 +46,48 @@ const Checkout = () => {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('COD')
+
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  )
+  const activeCoupon = appliedCoupon?.subtotal === subtotal ? appliedCoupon : null
+  const discount = activeCoupon?.discount || 0
+  const finalAmount = Math.max(0, subtotal - discount)
 
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     })
+  }
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Enter a coupon code.')
+      return
+    }
+
+    try {
+      setCouponLoading(true)
+      const result = await validateCoupon(couponCode.trim(), subtotal)
+      setAppliedCoupon({ code: result.coupon.code, discount: result.discount, subtotal })
+      toast.success('Coupon applied!')
+    } catch (err) {
+      setAppliedCoupon(null)
+      toast.error(err.response?.data?.message || 'Invalid coupon.')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCode('')
   }
 
   const handleSubmit = async (e) => {
@@ -43,9 +103,8 @@ const Checkout = () => {
       setError('')
 
       const orderData = {
-        customerName: form.customerName,
-        email: form.email,
         phone: form.phone,
+        couponCode: activeCoupon?.code || '',
 
         shippingAddress: {
           street: form.street,
@@ -60,24 +119,71 @@ const Checkout = () => {
           quantity: item.quantity,
         })),
 
-        paymentMethod: 'COD',
+        paymentMethod,
       }
 
       const response = await createOrder(orderData)
 
-      dispatch(clearCart())
+      if (paymentMethod === 'COD') {
+        dispatch(clearCart())
+        navigate('/order-success', { state: { order: response.order } })
+        return
+      }
 
-      navigate('/order-success', {
-        state: {
-          order: response.order,
+      const loaded = await loadRazorpayScript()
+      if (!loaded) {
+        throw new Error('Unable to load Razorpay Checkout. Your order remains pending.')
+      }
+
+      const gatewayOrder = await createRazorpayOrder(response.order._id)
+      const options = {
+        key: gatewayOrder.keyId,
+        amount: gatewayOrder.amount,
+        currency: gatewayOrder.currency,
+        name: 'ShopSphere',
+        description: `Payment for order ${response.order._id}`,
+        order_id: gatewayOrder.razorpayOrderId,
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: form.phone,
         },
+        theme: { color: '#2563EB' },
+        handler: async (paymentResponse) => {
+          try {
+            const verification = await verifyRazorpayPayment({
+              ...paymentResponse,
+              shopSphereOrderId: response.order._id,
+            })
+            if (verification.success) {
+              dispatch(clearCart())
+              toast.success('Payment successful!')
+              navigate('/order-success', { state: { order: verification.order } })
+            }
+          } catch (verifyError) {
+            const message = verifyError.response?.data?.message || 'Payment verification failed. Contact support if money was deducted.'
+            setError(message)
+            toast.error(message)
+          }
+        },
+        modal: {
+          ondismiss: () => toast('Payment window closed. Your order is still pending.'),
+        },
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.on('payment.failed', (paymentFailure) => {
+        toast.error(paymentFailure.error?.description || 'Payment failed. Please try again.')
       })
+      razorpay.open()
 
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
+      const message = err.response?.data?.message || err.message ||
         'Unable to place your order. Please try again.'
+      setError(
+        message
       )
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -127,22 +233,18 @@ const Checkout = () => {
               <input
                 name="customerName"
                 value={form.customerName}
-                onChange={handleChange}
-                placeholder="Full name"
-                required
-                maxLength={100}
-                className="rounded-lg border p-3"
+                readOnly
+                aria-label="Account name"
+                className="rounded-lg border bg-gray-50 p-3 text-gray-600"
               />
 
               <input
                 name="email"
                 type="email"
                 value={form.email}
-                onChange={handleChange}
-                placeholder="Email address"
-                required
-                maxLength={254}
-                className="rounded-lg border p-3"
+                readOnly
+                aria-label="Account email"
+                className="rounded-lg border bg-gray-50 p-3 text-gray-600"
               />
 
               <input
@@ -217,11 +319,13 @@ const Checkout = () => {
               Payment Method
             </h2>
 
-            <label className="flex items-center gap-3 rounded-lg border p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4">
               <input
                 type="radio"
-                checked
-                readOnly
+                name="paymentMethod"
+                value="COD"
+                checked={paymentMethod === 'COD'}
+                onChange={() => setPaymentMethod('COD')}
               />
 
               <div>
@@ -235,6 +339,56 @@ const Checkout = () => {
               </div>
             </label>
 
+            <label className="mt-3 flex cursor-pointer items-center gap-3 rounded-lg border p-4">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="ONLINE"
+                checked={paymentMethod === 'ONLINE'}
+                onChange={() => setPaymentMethod('ONLINE')}
+              />
+              <div>
+                <p className="font-semibold">Pay Online with Razorpay</p>
+                <p className="text-sm text-gray-500">UPI, cards and net banking.</p>
+              </div>
+            </label>
+
+          </div>
+
+          {/* Coupon */}
+          <div className="rounded-2xl border bg-white p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-semibold">
+              <Tag size={19} /> Apply Coupon
+            </h2>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="Enter coupon code"
+                disabled={Boolean(activeCoupon)}
+                className="min-w-0 flex-1 rounded-xl border px-4 py-3 uppercase"
+              />
+              <button
+                type="button"
+                onClick={handleApplyCoupon}
+                disabled={couponLoading || Boolean(activeCoupon)}
+                className="rounded-xl bg-blue-600 px-4 text-white disabled:opacity-50"
+              >
+                {couponLoading ? 'Checking...' : 'Apply'}
+              </button>
+            </div>
+            {activeCoupon && (
+              <div className="mt-4 flex items-center justify-between rounded-xl bg-green-50 p-3 text-green-700">
+                <div>
+                  <p className="font-semibold">{activeCoupon.code} applied</p>
+                  <p className="text-sm">You saved {currency(activeCoupon.discount)}</p>
+                </div>
+                <button type="button" onClick={removeCoupon} aria-label="Remove coupon" className="rounded-lg p-2 hover:bg-green-100">
+                  <X size={19} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Order summary */}
@@ -262,16 +416,19 @@ const Checkout = () => {
               </div>
             ))}
 
-            <div className="mt-5 flex justify-between text-lg font-bold">
-              <span>Estimated Total</span>
-
-              <span>
-                ₹{cartItems.reduce(
-                  (total, item) =>
-                    total + item.price * item.quantity,
-                  0
-                ).toLocaleString('en-IN')}
-              </span>
+            <div className="mt-5 space-y-3 border-t pt-4">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{currency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-green-600">
+                <span>Discount</span>
+                <span>- {currency(discount)}</span>
+              </div>
+              <div className="flex justify-between border-t pt-3 text-lg font-bold">
+                <span>Total</span>
+                <span>{currency(finalAmount)}</span>
+              </div>
             </div>
 
             <p className="mt-2 text-xs text-gray-500">
@@ -291,7 +448,7 @@ const Checkout = () => {
             disabled={loading}
             className="w-full rounded-lg bg-black px-6 py-4 font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
           >
-            {loading ? 'Placing Order...' : 'Place Order'}
+            {loading ? 'Processing...' : paymentMethod === 'ONLINE' ? 'Continue to Payment' : 'Place Order'}
           </button>
 
         </form>

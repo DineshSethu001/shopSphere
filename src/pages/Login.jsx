@@ -1,6 +1,6 @@
 
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 import { loginUser } from '../services/authService'
@@ -9,6 +9,18 @@ import { setCredentials } from '../redux/authSlice'
 const Login = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
+  const requestedPath = location.state?.from?.pathname
+  const allowedReturnPaths = [
+    '/checkout',
+    '/wishlist',
+    '/my-orders',
+    '/track-order',
+    '/order-success',
+  ]
+  const redirectTo = allowedReturnPaths.includes(requestedPath)
+    ? requestedPath
+    : '/'
 
   const [form, setForm] = useState({
     email: '',
@@ -39,7 +51,11 @@ const Login = () => {
 
       dispatch(setCredentials(data.user))
 
-      navigate(data.user.role === 'admin' ? '/admin' : '/')
+      if (data.user.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate(redirectTo, { replace: true })
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||

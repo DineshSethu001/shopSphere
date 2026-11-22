@@ -14,6 +14,7 @@ import {
   Minus,
   ShoppingBag,
 } from 'lucide-react'
+import { getOptimizedImageUrl } from '../services/optimizedImage'
 
 function Cart() {
   const dispatch = useDispatch()
@@ -68,8 +69,12 @@ function Cart() {
             >
 
               <img
-                src={item.image}
+                src={getOptimizedImageUrl(item.image, 300)}
                 alt={item.name}
+                width="128"
+                height="128"
+                loading="lazy"
+                decoding="async"
                 className="w-full sm:w-32 h-32 object-cover rounded-lg"
               />
 

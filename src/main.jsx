@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
+import { HelmetProvider } from 'react-helmet-async'
 
 import App from './App'
 import { store, persistor } from './redux/store'
@@ -14,13 +15,15 @@ ReactDOM.createRoot(
   document.getElementById('root')
 ).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate
-        loading={<p>Loading ShopSphere...</p>}
-        persistor={persistor}
-      >
-        <App />
-      </PersistGate>
-    </Provider>
+    <HelmetProvider>
+      <Provider store={store}>
+        <PersistGate
+          loading={<p>Loading ShopSphere...</p>}
+          persistor={persistor}
+        >
+          <App />
+        </PersistGate>
+      </Provider>
+    </HelmetProvider>
   </React.StrictMode>
 )

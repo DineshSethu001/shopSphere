@@ -1,5 +1,6 @@
 
 import cloudinary from '../config/cloudinary.js'
+import sharp from 'sharp'
 
 export const uploadProductImage = async (req, res) => {
   try {
@@ -8,6 +9,42 @@ export const uploadProductImage = async (req, res) => {
         success: false,
         message: 'Please select an image.',
       })
+    }
+
+    let metadata
+    try {
+      metadata = await sharp(req.file.buffer, {
+        failOn: 'error',
+        limitInputPixels: 40_000_000,
+      }).metadata()
+    } catch {
+      return res.status(400).json({ success: false, message: 'The uploaded image is malformed or unsupported.' })
+    }
+    const imageMimeTypes = {
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+    }
+
+    if (!imageMimeTypes[metadata.format] || imageMimeTypes[metadata.format] !== req.file.mimetype) {
+      return res.status(400).json({
+        success: false,
+        message: 'The uploaded file content does not match a supported image type.',
+      })
+    }
+
+    // Decode and re-encode the upload to strip metadata and reject malformed image data.
+    let sanitizedImage
+    try {
+      sanitizedImage = await sharp(req.file.buffer, {
+        failOn: 'error',
+        limitInputPixels: 40_000_000,
+      })
+        .rotate()
+        .toFormat(metadata.format)
+        .toBuffer()
+    } catch {
+      return res.status(400).json({ success: false, message: 'The uploaded image could not be decoded.' })
     }
 
     const result = await new Promise((resolve, reject) => {
@@ -22,7 +59,7 @@ export const uploadProductImage = async (req, res) => {
         }
       )
 
-      stream.end(req.file.buffer)
+      stream.end(sanitizedImage)
     })
 
     return res.status(200).json({

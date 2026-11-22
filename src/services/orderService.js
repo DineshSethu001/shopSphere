@@ -11,6 +11,21 @@ export const fetchOrders = async () => {
   return data.orders
 }
 
+export const fetchMyOrders = async () => {
+  const { data } = await api.get('/orders/my-orders')
+  return data.orders
+}
+
+export const fetchMyOrderById = async (id) => {
+  const { data } = await api.get(`/orders/my-orders/${id}`)
+  return data.order
+}
+
+export const cancelMyOrder = async (id, reason = '') => {
+  const { data } = await api.post(`/orders/my-orders/${id}/cancel`, { reason })
+  return data
+}
+
 export const fetchOrderById = async (id) => {
   const { data } = await api.get(`/orders/${id}`)
   return data.order

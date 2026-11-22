@@ -4,8 +4,12 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ShoppingCart } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { addToCart } from '../redux/cartSlice'
 import { fetchProductById } from '../services/productService'
+import ProductReviews from '../components/ProductReviews'
+import SEO from '../components/SEO'
+import { getOptimizedImageUrl } from '../services/optimizedImage'
 
 const ProductDetails = () => {
   const { id } = useParams()
@@ -72,13 +76,49 @@ const ProductDetails = () => {
     )
   }
 
+  const productStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || `${product.name} available from ShopSphere.`,
+    sku: String(product._id || product.id),
+    ...(product.image ? { image: product.image } : {}),
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'INR',
+      price: Number(product.price),
+      availability: product.stock > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: 'ShopSphere' },
+    },
+    ...(product.numReviews > 0 && product.rating > 0
+      ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(product.rating), reviewCount: Number(product.numReviews) } }
+      : {}),
+  }
+
   return (
-    <section className="grid gap-10 px-6 py-12 md:grid-cols-2 md:px-12">
+    <main className="mx-auto max-w-7xl px-6 py-12 md:px-12">
+      <SEO
+        title={product.name}
+        description={product.description?.slice(0, 155) || `${product.name} from ShopSphere.`}
+        keywords={[product.name, product.category, 'ShopSphere']}
+        image={product.image}
+        type="product"
+        structuredData={productStructuredData}
+      />
+    <section className="grid gap-10 md:grid-cols-2">
 
       <div className="overflow-hidden rounded-2xl bg-gray-100">
         <img
-          src={product.image}
+          src={getOptimizedImageUrl(product.image, 1000)}
           alt={product.name}
+          width="1000"
+          height="700"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="h-full max-h-[500px] w-full object-cover"
         />
       </div>
@@ -92,6 +132,14 @@ const ProductDetails = () => {
         <h1 className="text-3xl font-bold md:text-4xl">
           {product.name}
         </h1>
+
+        <div className="mt-3 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-yellow-500">
+            <Star size={17} fill="currentColor" />
+            <span className="font-semibold text-gray-700">{Number(product.rating || 0).toFixed(1)}</span>
+          </span>
+          <span className="text-sm text-gray-500">({product.numReviews || 0} reviews)</span>
+        </div>
 
         <p className="mt-5 text-2xl font-bold">
           ₹{product.price.toLocaleString('en-IN')}
@@ -140,6 +188,8 @@ const ProductDetails = () => {
 
       </div>
     </section>
+    <ProductReviews productId={product.id} />
+    </main>
   )
 }
 

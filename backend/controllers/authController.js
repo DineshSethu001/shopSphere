@@ -21,7 +21,14 @@ export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body
 
-    if (!name || !email || !password) {
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !name.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required.',
@@ -35,10 +42,10 @@ export const registerUser = async (req, res) => {
       })
     }
 
-    if (password.length < 8 || password.length > 72) {
+    if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be between 8 and 72 characters.',
+        message: 'Password must contain at least 8 characters and no more than 72 UTF-8 bytes.',
       })
     }
 
@@ -99,7 +106,7 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email and password are required.',

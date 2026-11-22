@@ -34,8 +34,15 @@ function Hero() {
 
         <div className="rounded-2xl overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000"
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80"
+            srcSet="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80 600w, https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80 1000w"
+            sizes="(min-width: 768px) 50vw, 100vw"
             alt="ShopSphere shopping collection"
+            width="1000"
+            height="600"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="w-full h-[350px] md:h-[450px] object-cover"
           />
         </div>
