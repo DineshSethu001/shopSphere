@@ -1,0 +1,1 @@
+import { uploadProductImage } from '../services/imageService'
