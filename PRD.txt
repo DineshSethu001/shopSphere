@@ -1,0 +1,428 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# ShopSphere – MERN Stack E-Commerce Platform
+
+""Document Version:"" 1.0  
+""Project Name:"" ShopSphere  
+""Product Type:"" Full-Stack E-Commerce Web Application  
+""Technology:"" MERN Stack  
+""Status:"" Development & Deployment Phase
+
+---
+
+## 1. Product Overview
+
+ShopSphere is a full-stack e-commerce platform designed to provide customers with a seamless online shopping experience and administrators with an efficient product, order, coupon and inventory management system.
+
+The platform allows customers to browse products, search and filter products, manage shopping carts, place orders, make online payments, track purchases, submit reviews and manage wishlists.
+
+Administrators can manage products, customers' orders, inventory, coupons and business analytics through a secure dashboard.
+
+## 2. Product Objectives
+
+- Develop a responsive and user-friendly e-commerce platform.
+- Provide secure customer registration and authentication.
+- Implement efficient product discovery and shopping cart functionality.
+- Support Cash on Delivery (COD) and Razorpay online payments.
+- Provide centralized product and order management.
+- Maintain accurate inventory and order records.
+- Optimize website performance, security and SEO.
+- Deploy the application using cloud infrastructure.
+
+## 3. Target Users
+
+### 3.1 Customers
+Users who want to browse, purchase and manage products online.
+
+### 3.2 Administrators
+Authorized users responsible for managing products, orders, inventory, coupons and business operations.
+
+## 4. Functional Requirements
+
+### 4.1 Customer Authentication
+- Customer registration.
+- Customer login and logout.
+- Password hashing using bcrypt.
+- JWT-based authentication.
+- Role-based access control.
+- Protected customer routes.
+- Secure session token handling.
+
+### 4.2 Homepage
+- Responsive navigation bar.
+- Hero banner and promotional sections.
+- Product categories.
+- Featured products.
+- Product recommendations.
+- Shopping cart access.
+- Wishlist access.
+
+### 4.3 Product Management – Customer Side
+- Display available products.
+- Search products by name.
+- Filter by category.
+- Filter by price range.
+- Sort products by price and other supported criteria.
+- Pagination.
+- View individual product details.
+- Display product images, descriptions, prices and stock availability.
+
+### 4.4 Shopping Cart
+- Add products to cart.
+- Remove products from cart.
+- Increase or decrease quantity.
+- Calculate subtotal.
+- Persist cart data across refreshes.
+- Validate stock before checkout.
+
+### 4.5 Wishlist
+- Add products to wishlist.
+- Remove products from wishlist.
+- View saved products.
+- Maintain wishlist for authenticated users.
+
+### 4.6 Checkout and Orders
+- Collect customer information.
+- Collect shipping address.
+- Review cart items.
+- Apply discount coupons.
+- Calculate final order amount on the backend.
+- Reserve inventory during order creation.
+- Create customer orders.
+- View order history.
+- View individual order details.
+- Cancel eligible orders.
+
+### 4.7 Payment Integration
+Integrate Razorpay payment gateway.
+
+Supported payment methods:
+- Cash on Delivery.
+- Razorpay online payment.
+
+Payment requirements:
+- Create payment orders securely.
+- Verify payment signatures.
+- Validate payment amounts and currency.
+- Process payment webhooks.
+- Record payment status.
+- Handle failed and duplicate payment events.
+- Maintain payment and order reconciliation.
+
+### 4.8 Product Reviews
+- Submit product reviews.
+- Update eligible reviews.
+- Display customer ratings.
+- Calculate average product ratings.
+- Restrict reviews to eligible customers with delivered orders.
+
+### 4.9 Coupon Management
+- Create discount coupons.
+- Support percentage and fixed discounts.
+- Configure minimum order amount.
+- Configure maximum discount.
+- Configure usage limits.
+- Configure expiration dates.
+- Activate and deactivate coupons.
+- Validate coupons on the backend.
+
+### 4.10 Admin Dashboard
+- Display total orders.
+- Display total customers.
+- Display product statistics.
+- Display revenue analytics.
+- View recent orders.
+- Monitor order status.
+- Provide business performance insights.
+
+### 4.11 Admin Product Management
+- Add products.
+- Edit products.
+- Delete products.
+- Upload product images.
+- Manage prices and descriptions.
+- Manage product categories.
+- Update stock quantities.
+- Activate and deactivate products.
+
+### 4.12 Admin Order Management
+- View all orders.
+- View individual order details.
+- Update order status.
+- Monitor payment status.
+- Review customer and shipping information.
+- Manage order fulfillment.
+
+### 4.13 Inventory Management
+- View current inventory.
+- Monitor low-stock products.
+- Update stock quantities.
+- Adjust inventory levels.
+- Prevent purchases exceeding available stock.
+- Maintain accurate stock restoration during eligible cancellations.
+
+## 5. Non-Functional Requirements
+
+### Performance
+- Optimize frontend bundle size.
+- Implement lazy loading.
+- Optimize product images.
+- Use database indexes where appropriate.
+- Minimize unnecessary React renders.
+- Target good Core Web Vitals.
+
+### Security
+- Hash passwords using bcrypt.
+- Use JWT authentication.
+- Implement role-based authorization.
+- Validate and sanitize incoming data.
+- Protect API endpoints.
+- Implement rate limiting.
+- Use Helmet security headers.
+- Configure CORS.
+- Protect environment variables.
+- Verify Razorpay payment signatures and webhooks.
+
+### Scalability
+- Use modular frontend and backend architecture.
+- Use reusable React components.
+- Maintain separate controllers, routes, models and middleware.
+- Use MongoDB indexes for frequently queried fields.
+- Support future feature expansion.
+
+### Usability
+- Responsive desktop, tablet and mobile layouts.
+- Clear navigation.
+- User-friendly forms.
+- Loading indicators.
+- Error messages and success notifications.
+- Consistent UI design.
+
+## 6. Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React.js |
+| Build Tool | Vite |
+| Styling | Tailwind CSS |
+| Routing | React Router |
+| State Management | Redux Toolkit |
+| API Communication | Axios |
+| Backend | Node.js |
+| Backend Framework | Express.js |
+| Database | MongoDB Atlas |
+| ODM | Mongoose |
+| Authentication | JWT |
+| Password Security | bcryptjs |
+| Image Storage | Cloudinary |
+| File Upload | Multer |
+| Payment Gateway | Razorpay |
+| API Testing | Postman |
+| Version Control | Git and GitHub |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+
+## 7. System Architecture
+
+The application follows a client-server architecture.
+
+""Frontend:""
+React.js communicates with backend REST APIs using Axios.
+
+""Backend:""
+Express.js handles business logic, authentication, product management, orders and payments.
+
+""Database:""
+MongoDB stores customer information, products, orders, coupons and reviews.
+
+""External Services:""
+- Cloudinary for image storage.
+- Razorpay for online payments.
+- Vercel for frontend hosting.
+- Render for backend hosting.
+
+## 8. Database Design
+
+Primary MongoDB collections:
+
+| Collection | Purpose |
+|---|---|
+| Users | Customer and admin information |
+| Products | Product details and inventory |
+| Orders | Customer order information |
+| Coupons | Discount management |
+| Reviews | Product ratings and feedback |
+
+### Important Relationships
+- One customer can have multiple orders.
+- One product can appear in multiple orders.
+- One product can have multiple reviews.
+- One customer can maintain a wishlist.
+- Orders reference customers and products.
+
+## 9. API Requirements
+
+### Authentication
+- POST /api/auth/register
+- POST /api/auth/login
+
+### Products
+- GET /api/products
+- GET /api/products/:id
+- GET /api/products/categories
+- POST /api/products
+- PUT /api/products/:id
+- DELETE /api/products/:id
+
+### Orders
+- POST /api/orders
+- GET /api/orders/my-orders
+- GET /api/orders/my-orders/:id
+- POST /api/orders/my-orders/:id/cancel
+
+### Wishlist
+- GET /api/wishlist
+- POST /api/wishlist
+- DELETE /api/wishlist/:productId
+
+### Coupons
+- POST /api/coupons/validate
+- POST /api/coupons
+- GET /api/coupons
+
+### Payments
+- POST /api/payments/create-order
+- POST /api/payments/verify
+
+### Inventory
+- GET /api/admin/inventory
+- PUT /api/admin/inventory/:id
+
+*All protected and administrative endpoints must enforce the appropriate authentication and authorization rules.*
+
+## 10. Deployment Requirements
+
+### Frontend Deployment
+Platform: Vercel
+
+Requirements:
+- GitHub repository integration.
+- Production build configuration.
+- Environment variable configuration.
+- SPA routing rewrite.
+- Production API URL.
+
+### Backend Deployment
+Platform: Render
+
+Requirements:
+- Node.js Web Service.
+- Production start command.
+- MongoDB Atlas connection.
+- Environment variables.
+- Health-check endpoint.
+- Production CORS configuration.
+- Secure deployment settings.
+
+### Backend Environment Variables
+
+- NODE_ENV
+- PORT
+- MONGODB_URI
+- JWT_SECRET
+- JWT_EXPIRES_IN
+- CLOUDINARY_CLOUD_NAME
+- CLOUDINARY_API_KEY
+- CLOUDINARY_API_SECRET
+- RAZORPAY_KEY_ID
+- RAZORPAY_KEY_SECRET
+- RAZORPAY_WEBHOOK_SECRET
+- FRONTEND_URL
+
+All secret environment variables must remain on the backend and must never be exposed in frontend code or committed to GitHub.
+
+## 11. Testing Requirements
+
+### Functional Testing
+- Registration and login.
+- Product browsing.
+- Search and filtering.
+- Cart operations.
+- Wishlist operations.
+- Coupon validation.
+- Order creation.
+- Order cancellation.
+- Payment verification.
+- Inventory updates.
+- Admin dashboard.
+
+### Security Testing
+- Unauthorized API access.
+- Invalid JWT tokens.
+- Customer access to admin routes.
+- Invalid input validation.
+- Rate limiting.
+- Payment signature verification.
+- Webhook replay and duplicate event handling.
+
+### Performance Testing
+- Lighthouse performance audit.
+- Responsive design testing.
+- API response-time testing.
+- Database query optimization.
+- Image loading performance.
+
+## 12. Success Criteria
+
+The project will be considered ready for launch when:
+
+- Customers can register and log in securely.
+- Products load correctly from MongoDB.
+- Search, filtering and pagination work.
+- Cart and wishlist operations work correctly.
+- Customers can place and manage orders.
+- COD and Razorpay payment flows work correctly.
+- Inventory remains consistent.
+- Admin features are protected.
+- The frontend and backend communicate successfully in production.
+- The website works across mobile and desktop.
+- Security and deployment tests are completed.
+
+## 13. Future Enhancements
+
+Potential future improvements include:
+
+- Product recommendation engine.
+- Advanced analytics dashboard.
+- Email and SMS order notifications.
+- Real-time order tracking.
+- Product comparison.
+- Multiple payment options.
+- Advanced customer support.
+- Multi-vendor marketplace functionality.
+- Progressive Web App (PWA).
+- AI-powered shopping assistant.
+
+## 14. Project Deliverables
+
+1. Responsive React frontend.
+2. Express.js REST API backend.
+3. MongoDB database integration.
+4. Secure authentication system.
+5. Admin dashboard.
+6. Product and inventory management.
+7. Shopping cart and wishlist.
+8. Order management.
+9. Razorpay payment integration.
+10. Cloudinary image integration.
+11. API testing documentation.
+12. Deployment and configuration documentation.
+13. GitHub source code repository.
+14. Live deployed application.
+
+---
+
+""End of Product Requirements Document""
+
+""Project:"" ShopSphere  
+""Architecture:"" MERN Stack  
+""Deployment:"" Vercel + Render + MongoDB Atlas
